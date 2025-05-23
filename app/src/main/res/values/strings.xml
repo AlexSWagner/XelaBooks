@@ -1,0 +1,70 @@
+<resources>
+    <string name="app_name">AudioBook Manager</string>
+    <string name="title_home">Library</string>
+    <string name="title_dashboard">Player</string>
+    <string name="title_notifications">Settings</string>
+    <string name="microsoft_app_id">YOUR_MICROSOFT_APP_ID</string>
+    
+    <!-- Microsoft Graph Configuration -->
+    <string name="microsoft_client_id">3be7a0ba-69d5-4009-b65b-249b091631d3</string>
+    <string name="microsoft_redirect_uri">msauth://com.xelabooks.app/lgznFSLhxtKgkx2tme3vIzY7w%2Fg%3D</string>
+    <string name="microsoft_authority">https://login.microsoftonline.com/common</string>
+    <string name="microsoft_scope_files_read">Files.Read</string>
+    <string name="microsoft_scope_files_read_write">Files.ReadWrite</string>
+    <string name="onedrive_working_directory">/Books/Audiobooks</string>
+    
+    <!-- Add Audiobook Fragment -->
+    <string name="select_audio_file">Select Audio File</string>
+    <string name="select_from_google_drive">Select from Google Drive</string>
+    <string name="select_from_one_drive">Select from OneDrive</string>
+    <string name="google_signin_failed">Google Sign-In failed</string>
+    <string name="google_signin_error">Google Sign-In failed: %1$s</string>
+    <string name="connected_to_drive">Connected to Google Drive</string>
+    <string name="connected_to_one_drive">Connected to OneDrive</string>
+    <string name="google_drive_integration_message">Google Drive integration complete! In a full implementation, you would see a file picker here.</string>
+    <string name="one_drive_integration_message">OneDrive integration complete!</string>
+    <string name="please_authorize_one_drive">Please authorize OneDrive access</string>
+    <string name="sample_google_drive_file">Sample Google Drive Audiobook.mp3</string>
+    <string name="sample_one_drive_file">Sample OneDrive Audiobook.mp3</string>
+    <string name="fill_required_fields">Please fill in all required fields</string>
+    <string name="audiobook_added_successfully">Audiobook added successfully</string>
+    <string name="failed_to_save_audio_file">Failed to save audio file</string>
+    <string name="unknown_file">Unknown file</string>
+    <string name="adding_to_library">Adding to Library...</string>
+    <string name="play_audio_book">Play book</string>
+    <string name="delete_audio_book">Delete book</string>
+    <string name="add_chapter">Add Chapter</string>
+    
+    <!-- OneDrive Integration -->
+    <string name="onedrive_signin_failed">Failed to sign in to OneDrive</string>
+    <string name="onedrive_signin_cancelled">OneDrive Sign-In was cancelled</string>
+    <string name="onedrive_loading_files">Loading files from OneDrive…</string>
+    <string name="onedrive_no_files">No audio files found in OneDrive</string>
+    <string name="onedrive_file_selected">OneDrive file selected: %1$s</string>
+    <string name="onedrive_connection_error">Error connecting to OneDrive: %1$s</string>
+    <string name="onedrive_file_access_error">Error accessing file: %1$s</string>
+    <string name="onedrive_browsing_error">Error browsing OneDrive: %1$s</string>
+    <string name="onedrive_select_file">Select from OneDrive</string>
+    <string name="onedrive_download_progress">Downloading: %1$d%%</string>
+    
+    <!-- Add Book Dialog -->
+    <string name="dialog_add_book_title">Add New Audiobook</string>
+    <string name="dialog_add_book_description">Choose how you would like to add your audiobook</string>
+    <string name="single_file_title">Single Audio File</string>
+    <string name="single_file_description">Add a single audio file as one audiobook</string>
+    <string name="multi_chapter_title">Multi-Chapter Book</string>
+    <string name="multi_chapter_description">Add multiple audio files as chapters of one book</string>
+    <string name="cancel">Cancel</string>
+    <string name="add_single_file_book">Add Single File Book</string>
+    <string name="add_multi_chapter_book">Add Multi-Chapter Book</string>
+    
+    <!-- Player Fragment -->
+    <string name="previous_chapter">Previous Chapter</string>
+    <string name="next_chapter">Next Chapter</string>
+    <string name="chapters">Chapters</string>
+    <string name="no_chapters_available">No chapters available</string>
+    <string name="book_cover_description">Book cover</string>
+    <string name="rewind_10_seconds">Rewind 10 seconds</string>
+    <string name="forward_30_seconds">Forward 30 seconds</string>
+    <string name="play_pause">Play/Pause</string>
+</resources>

@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/mobile_navigation"
+    app:startDestination="@+id/navigation_home">
+
+    <fragment
+        android:id="@+id/navigation_home"
+        android:name="com.xelabooks.app.ui.home.HomeFragment"
+        android:label="Library"
+        tools:layout="@layout/fragment_home">
+        <action
+            android:id="@+id/action_home_to_add_book"
+            app:destination="@id/navigation_import" />
+        <action
+            android:id="@+id/action_home_to_player"
+            app:destination="@id/navigation_player" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/navigation_player"
+        android:name="com.xelabooks.app.ui.player.PlayerFragment"
+        android:label="Player"
+        tools:layout="@layout/fragment_player" />
+
+    <fragment
+        android:id="@+id/navigation_settings"
+        android:name="com.xelabooks.app.ui.settings.SettingsFragment"
+        android:label="Settings"
+        tools:layout="@layout/fragment_settings" />
+        
+    <fragment
+        android:id="@+id/navigation_import"
+        android:name="com.xelabooks.app.ui.add.AddAudiobookFragment"
+        android:label="Import"
+        tools:layout="@layout/fragment_add_audiobook">
+        <action
+            android:id="@+id/action_navigation_add_audiobook_to_oneDriveBrowser"
+            app:destination="@id/oneDriveBrowserFragment" />
+    </fragment>
+    
+    <fragment
+        android:id="@+id/oneDriveBrowserFragment"
+        android:name="com.xelabooks.app.ui.onedrive.OneDriveBrowserFragment"
+        android:label="OneDrive Files"
+        tools:layout="@layout/fragment_onedrive_browser">
+        <argument
+            android:name="isForCover"
+            android:defaultValue="false"
+            app:argType="boolean" />
+    </fragment>
+</navigation>

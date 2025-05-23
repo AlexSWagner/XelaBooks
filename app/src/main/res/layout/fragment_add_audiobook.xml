@@ -1,0 +1,276 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.core.widget.NestedScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fillViewport="true">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:padding="16dp">
+
+        <TextView
+            android:id="@+id/tvAddBookTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Add New Audiobook"
+            android:textSize="24sp"
+            android:textStyle="bold"
+            android:textColor="@color/blue_700"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/tilBookTitle"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:hint="Title"
+            app:layout_constraintTop_toBottomOf="@+id/tvAddBookTitle">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/etBookTitle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="text" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/tilAuthor"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:hint="Author"
+            app:layout_constraintTop_toBottomOf="@+id/tilBookTitle">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/etAuthor"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="text" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/tilDescription"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:hint="Description (optional)"
+            app:layout_constraintTop_toBottomOf="@+id/tilAuthor">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/etDescription"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="top"
+                android:inputType="textMultiLine"
+                android:lines="3" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- Cover Image Section -->
+        <TextView
+            android:id="@+id/tvCoverSectionTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:text="Cover Image"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:textColor="@color/blue_700"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/tilDescription" />
+
+        <com.google.android.material.imageview.ShapeableImageView
+            android:id="@+id/ivCoverPreview"
+            android:layout_width="120dp"
+            android:layout_height="160dp"
+            android:layout_marginTop="8dp"
+            android:background="#EEEEEE"
+            android:scaleType="centerCrop"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/tvCoverSectionTitle"
+            app:shapeAppearance="@style/ShapeAppearance.App.MediumComponent"
+            android:contentDescription="Book cover preview" />
+
+        <Button
+            android:id="@+id/btnSelectCover"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:text="Select Cover Image"
+            app:layout_constraintBottom_toBottomOf="@+id/ivCoverPreview"
+            app:layout_constraintStart_toEndOf="@+id/ivCoverPreview"
+            app:layout_constraintTop_toTopOf="@+id/ivCoverPreview" />
+
+        <!-- Audio Source Section -->
+        <TextView
+            android:id="@+id/tvFileSourceLabel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:text="Audio Source"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:textColor="@color/blue_700"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/ivCoverPreview" />
+
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/cardAudioSource"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            app:cardCornerRadius="12dp"
+            app:cardElevation="2dp"
+            app:layout_constraintTop_toBottomOf="@+id/tvFileSourceLabel">
+
+            <RadioGroup
+                android:id="@+id/rgAudioSource"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="12dp">
+
+                <RadioButton
+                    android:id="@+id/rbLocal"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Local Storage"
+                    android:checked="true"
+                    android:padding="8dp" />
+
+                <RadioButton
+                    android:id="@+id/rbGoogleDrive"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Google Drive"
+                    android:padding="8dp" />
+
+                <RadioButton
+                    android:id="@+id/rbOneDrive"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="OneDrive"
+                    android:padding="8dp" />
+            </RadioGroup>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- Chapters Section -->
+        <TextView
+            android:id="@+id/tvChaptersTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:text="Chapters"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:textColor="@color/blue_700"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/cardAudioSource" />
+
+        <!-- Single button to add audio files -->
+        <Button
+            android:id="@+id/btnAddAudio"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="Add Audio File"
+            app:icon="@android:drawable/ic_menu_add"
+            app:layout_constraintTop_toBottomOf="@+id/tvChaptersTitle" />
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rvChapters"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:minHeight="100dp"
+            app:layout_constraintTop_toBottomOf="@+id/btnAddAudio" />
+
+        <TextView
+            android:id="@+id/tvNoChapters"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="No chapters added yet"
+            android:textAlignment="center"
+            android:padding="16dp"
+            android:visibility="visible"
+            app:layout_constraintTop_toBottomOf="@+id/btnAddAudio" />
+
+        <!-- Selected File Display - Changed to display info about main audiobook file if no chapters -->
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/cardSelectedFile"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            app:cardCornerRadius="12dp"
+            app:cardElevation="2dp"
+            app:strokeWidth="1dp"
+            app:strokeColor="@color/blue_500"
+            app:layout_constraintTop_toBottomOf="@+id/btnAddAudio">
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="16dp">
+
+                <ImageView
+                    android:id="@+id/ivAudioIcon"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:src="@android:drawable/ic_media_play"
+                    app:tint="@color/blue_700"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintBottom_toBottomOf="parent"/>
+
+                <TextView
+                    android:id="@+id/tvSelectedFileLabel"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="16dp"
+                    android:text="Selected Audio File:"
+                    android:textStyle="bold"
+                    app:layout_constraintStart_toEndOf="@+id/ivAudioIcon"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"/>
+
+                <TextView
+                    android:id="@+id/tvSelectedFile"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="16dp"
+                    android:layout_marginTop="4dp"
+                    android:text="No file selected"
+                    android:textColor="@color/blue_700"
+                    app:layout_constraintStart_toEndOf="@+id/ivAudioIcon"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/tvSelectedFileLabel"/>
+            </androidx.constraintlayout.widget.ConstraintLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- Add to Library Button -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnSaveBook"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="32dp"
+            android:layout_marginBottom="16dp"
+            android:text="ADD TO LIBRARY"
+            android:textSize="16sp"
+            android:padding="16dp"
+            android:enabled="false"
+            app:icon="@android:drawable/ic_menu_save"
+            app:iconGravity="textStart"
+            app:cornerRadius="8dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/cardSelectedFile"
+            app:layout_constraintVertical_bias="1.0" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</androidx.core.widget.NestedScrollView> 
