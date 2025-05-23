@@ -612,14 +612,46 @@ class AddAudiobookFragment : Fragment() {
             if (filePaths != null && filePaths.isNotEmpty()) {
                 Log.d(TAG, "Received ${filePaths.size} imported audio files from OneDrive")
                 
-                // We have multiple files imported from a folder
-                if (isMultiChapterMode) {
+                if (filePaths.size == 1) {
+                    // Single file imported from folder - treat as single file
+                    val file = File(filePaths.first())
+                    if (file.exists()) {
+                        if (isMultiChapterMode) {
+                            // Show dialog to name the chapter
+                            showChapterTitleDialog(file.toUri())
+                        } else {
+                            // Set as main audio file
+                            audioFileUri = file.toUri()
+                            binding.tvSelectedFile.text = file.name
+                            
+                            // Show the file card with animation
+                            binding.cardSelectedFile.visibility = View.VISIBLE
+                            binding.cardSelectedFile.alpha = 0f
+                            binding.cardSelectedFile.animate().alpha(1f).setDuration(300).start()
+                            
+                            Log.d(TAG, "Set main audio file: ${file.name}")
+                            Toast.makeText(requireContext(), "Audio file selected. Please enter the book title and author to save.", Toast.LENGTH_LONG).show()
+                        }
+                    } else {
+                        Log.w(TAG, "Downloaded file does not exist: ${filePaths.first()}")
+                        Toast.makeText(requireContext(), "Error: Downloaded file not found", Toast.LENGTH_SHORT).show()
+                    }
+                } else {
+                    // Multiple files imported - automatically enable multi-chapter mode and add all as chapters
+                    Log.d(TAG, "Multiple files detected, enabling multi-chapter mode automatically")
+                    
+                    if (!isMultiChapterMode) {
+                        isMultiChapterMode = true
+                        setupUIForMode()
+                        updateButtonText()
+                    }
+                    
                     // Import all as chapters with auto-naming
                     var successCount = 0
                     filePaths.forEachIndexed { index, path ->
                         val file = File(path)
                         if (file.exists()) {
-                            val chapterName = "Chapter ${chapters.size + index + 1}"
+                            val chapterName = "Chapter ${index + 1}"
                             addChapter(chapterName, file.toUri())
                             successCount++
                             Log.d(TAG, "Added chapter: $chapterName from file: ${file.name}")
@@ -628,25 +660,7 @@ class AddAudiobookFragment : Fragment() {
                         }
                     }
                     updateChaptersVisibility()
-                    Toast.makeText(requireContext(), "Added $successCount chapters. Please enter the book title and author to save.", Toast.LENGTH_LONG).show()
-                } else {
-                    // For single file mode, just use the first file
-                    val file = File(filePaths.first())
-                    if (file.exists()) {
-                        audioFileUri = file.toUri()
-                        binding.tvSelectedFile.text = file.name
-                        
-                        // Show the file card with animation
-                        binding.cardSelectedFile.visibility = View.VISIBLE
-                        binding.cardSelectedFile.alpha = 0f
-                        binding.cardSelectedFile.animate().alpha(1f).setDuration(300).start()
-                        
-                        Log.d(TAG, "Set main audio file: ${file.name}")
-                        Toast.makeText(requireContext(), "Audio file selected. Please enter the book title and author to save.", Toast.LENGTH_LONG).show()
-                    } else {
-                        Log.w(TAG, "First imported file does not exist: ${filePaths.first()}")
-                        Toast.makeText(requireContext(), "Error: Downloaded file not found", Toast.LENGTH_SHORT).show()
-                    }
+                    Toast.makeText(requireContext(), "Added $successCount chapters from folder. Please enter the book title and author to save.", Toast.LENGTH_LONG).show()
                 }
                 updateSaveButtonState()
                 

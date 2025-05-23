@@ -42,16 +42,12 @@ class HomeFragment : Fragment() {
         
         setupRecyclerView()
         setupObservers()
-        
-        // Log to verify the fragment is created correctly
-        Log.d(TAG, "Fragment created and views setup")
     }
     
     private fun setupRecyclerView() {
         adapter = AudioBookAdapter(
             onItemClick = { audioBook ->
                 // Navigate to player screen with the selected book ID
-                Log.d(TAG, "Book selected for playback: ${audioBook.title} (ID: ${audioBook.id})")
                 val bundle = Bundle().apply {
                     putString("bookId", audioBook.id)
                 }
@@ -92,11 +88,9 @@ class HomeFragment : Fragment() {
             if (books.isEmpty()) {
                 binding.emptyStateLayout.visibility = View.VISIBLE
                 binding.rvAudioBooks.visibility = View.GONE
-                Log.d(TAG, "No books found, showing empty state")
             } else {
                 binding.emptyStateLayout.visibility = View.GONE
                 binding.rvAudioBooks.visibility = View.VISIBLE
-                Log.d(TAG, "Books found: ${books.size}")
             }
         }
     }

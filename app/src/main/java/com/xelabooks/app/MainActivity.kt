@@ -78,20 +78,25 @@ class MainActivity : AppCompatActivity() {
         
         // Track navigation changes to sync player state
         navController.addOnDestinationChangedListener { _, destination, arguments ->
-            // Set toolbar logo size based on destination
+            // Set toolbar logo size based on destination  
             when (destination.id) {
                 R.id.navigation_player -> {
-                    binding.toolbarLogo.layoutParams.width = 28
-                    binding.toolbarLogo.layoutParams.height = 28
+                    // Slightly smaller for player screen 
+                    val sizeDp = 44 // Fits nicely in toolbar
+                    val sizePx = (sizeDp * resources.displayMetrics.density).toInt()
+                    binding.toolbarLogo.layoutParams.width = sizePx
+                    binding.toolbarLogo.layoutParams.height = sizePx
                     binding.toolbarLogo.requestLayout()
                     
                     // Save the current book ID when navigating to player
                     currentBookId = arguments?.getString("bookId")
-                    Log.d(TAG, "Navigated to player with book ID: $currentBookId")
                 }
                 else -> {
-                    binding.toolbarLogo.layoutParams.width = 36
-                    binding.toolbarLogo.layoutParams.height = 36
+                    // Full height - matches the blue toolbar height
+                    val sizeDp = 48 // Matches toolbar height nicely
+                    val sizePx = (sizeDp * resources.displayMetrics.density).toInt()
+                    binding.toolbarLogo.layoutParams.width = sizePx
+                    binding.toolbarLogo.layoutParams.height = sizePx
                     binding.toolbarLogo.requestLayout()
                 }
             }
@@ -125,7 +130,6 @@ class MainActivity : AppCompatActivity() {
     }
     
     private fun checkAndRequestPermissions() {
-        Log.d(TAG, "Checking app permissions")
         val permissionsNeeded = mutableListOf<String>()
         
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
@@ -151,14 +155,11 @@ class MainActivity : AppCompatActivity() {
         }
         
         if (permissionsNeeded.isNotEmpty()) {
-            Log.d(TAG, "Requesting permissions: $permissionsNeeded")
             ActivityCompat.requestPermissions(
                 this, 
                 permissionsNeeded.toTypedArray(),
                 PERMISSION_REQUEST_CODE
             )
-        } else {
-            Log.d(TAG, "All permissions already granted")
         }
     }
     
@@ -173,9 +174,7 @@ class MainActivity : AppCompatActivity() {
             // Check if all permissions were granted
             val allGranted = grantResults.all { it == PackageManager.PERMISSION_GRANTED }
             
-            if (allGranted) {
-                Log.d(TAG, "All permissions granted")
-            } else {
+            if (!allGranted) {
                 Log.w(TAG, "Some permissions were denied")
                 // We'll handle this case in the fragment when needed
             }

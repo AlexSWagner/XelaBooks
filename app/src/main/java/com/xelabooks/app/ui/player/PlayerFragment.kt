@@ -40,6 +40,46 @@ class PlayerFragment : Fragment() {
     // Chapter related fields
     private var currentChapters = mutableListOf<Chapter>()
     private var currentChapterIndex = 0
+    private var isInitialChapterLoad = true // Track if this is the first time loading chapters
+
+    private var lastSavedPosition = -1L // Track last saved position to avoid unnecessary DB writes
+    
+    private val updateSeekBarTask = object : Runnable {
+        override fun run() {
+            mediaPlayer?.let { mp ->
+                if (mp.isPlaying) {
+                    binding.seekBar.progress = mp.currentPosition
+                    updateCurrentTimeText(mp.currentPosition)
+                    
+                    // Save position every 10 seconds to reduce DB load, and only if position actually changed significantly
+                    val currentPosition = mp.currentPosition.toLong()
+                    val positionDiff = kotlin.math.abs(currentPosition - lastSavedPosition)
+                    if (currentPosition % 10000 < 1000 && positionDiff > 5000) {
+                        lastSavedPosition = currentPosition
+                        currentAudioBook?.let { book ->
+                            // For chapters, save chapter position
+                            if (currentChapters.isNotEmpty() && currentChapterIndex < currentChapters.size) {
+                                val chapter = currentChapters[currentChapterIndex]
+                                viewModel.updateChapterPlayPosition(chapter.id, currentPosition)
+                                // Also update which chapter we're on (but less frequently)
+                                if (currentPosition % 30000 < 1000) {
+                                    viewModel.updateCurrentChapter(book.id, chapter.id)
+                                }
+                                Unit
+                            } else {
+                                // For single-file books
+                                viewModel.updatePlayPosition(book.id, currentPosition)
+                            }
+                        }
+                    }
+                }
+                // Only schedule next update if media player is still playing
+                if (mp.isPlaying) {
+                    handler.postDelayed(this, 1000)
+                }
+            }
+        }
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -60,27 +100,11 @@ class PlayerFragment : Fragment() {
         
         // Get book ID from arguments
         arguments?.getString("bookId")?.let { bookId ->
-            Log.d(TAG, "Loading book with ID: $bookId")
+            
+            // Set up book observer
             viewModel.getBookById(bookId).observe(viewLifecycleOwner) { book ->
                 if (book != null) {
                     loadAudioBook(book)
-                    
-                    // Load chapters for this book
-                    viewModel.getChaptersForBook(bookId).observe(viewLifecycleOwner) { chapters ->
-                        if (chapters.isNotEmpty()) {
-                            Log.d(TAG, "Loaded ${chapters.size} chapters for book")
-                            loadChapters(chapters)
-                            // Double-check that chapter controls are visible
-                            binding.layoutChapters.post {
-                                binding.layoutChapters.visibility = View.VISIBLE
-                                Log.d(TAG, "Post-ensuring chapter controls visibility")
-                            }
-                        } else {
-                            Log.d(TAG, "No chapters found for book")
-                            // Hide chapter controls if no chapters
-                            binding.layoutChapters.visibility = View.GONE
-                        }
-                    }
                 } else {
                     Log.e(TAG, "Book not found with ID: $bookId")
                     Toast.makeText(requireContext(), "Book not found", Toast.LENGTH_SHORT).show()
@@ -93,9 +117,31 @@ class PlayerFragment : Fragment() {
                     }
                 }
             }
+            
+            // Set up chapters observer SEPARATELY to avoid multiple observers
+            viewModel.getChaptersForBook(bookId).observe(viewLifecycleOwner) { chapters ->
+                if (chapters.isNotEmpty()) {
+                    loadChapters(chapters)
+                    // Double-check that chapter controls are visible
+                    binding.layoutChapters.post {
+                        binding.layoutChapters.visibility = View.VISIBLE
+                    }
+                } else {
+                    // Hide chapter controls if no chapters
+                    binding.layoutChapters.visibility = View.GONE
+                    // Initialize media player for single-file audiobook if book is loaded
+                    currentAudioBook?.let { book ->
+                        if (book.filePath.isNotEmpty()) {
+                            initializeMediaPlayer(book.filePath, book.lastPlayedPosition.toInt())
+                        } else {
+                            Log.e(TAG, "Book has no chapters and no file path - cannot play")
+                            Toast.makeText(requireContext(), "This audiobook cannot be played - no audio files found", Toast.LENGTH_LONG).show()
+                        }
+                    }
+                }
+            }
         } ?: run {
             // Fallback if no book ID was passed
-            Log.d(TAG, "No book ID provided, loading first available book")
             viewModel.allBooks.observe(viewLifecycleOwner) { books ->
                 if (books.isNotEmpty() && currentAudioBook == null) {
                     loadAudioBook(books[0])
@@ -170,7 +216,6 @@ class PlayerFragment : Fragment() {
     }
     
     private fun loadAudioBook(audioBook: AudioBook) {
-        Log.d(TAG, "Loading audiobook: ${audioBook.title} with path: ${audioBook.filePath}")
         currentAudioBook = audioBook
         
         // Update UI
@@ -200,14 +245,9 @@ class PlayerFragment : Fragment() {
             binding.ivPlayerCover.setImageResource(R.drawable.placeholder_book_cover)
         }
         
-        // If book has chapters, load them first and let that handle media player setup
-        if (audioBook.currentChapterId != null) {
-            Log.d(TAG, "Book has a saved chapter ID: ${audioBook.currentChapterId}")
-            // Continue with loading chapters - we'll select the correct one when chapters are loaded
-        } else {
-            // Initialize media player for the main audiobook file
-            initializeMediaPlayer(audioBook.filePath, audioBook.lastPlayedPosition.toInt())
-        }
+        // Don't initialize media player here - wait for either chapters to be loaded or confirm it's a single-file book
+        // The observer in onViewCreated will handle loading chapters if they exist
+        // If no chapters exist, initializeMediaPlayer will be called from there with the single file
     }
     
     private fun initializeMediaPlayer(filePath: String, initialPosition: Int) {
@@ -220,18 +260,15 @@ class PlayerFragment : Fragment() {
                     // First try as URI
                     val uri = Uri.parse(filePath)
                     setDataSource(requireContext(), uri)
-                    Log.d(TAG, "Set data source as URI: $uri")
                 } catch (e: Exception) {
                     // Fall back to file path
                     Log.w(TAG, "Error setting URI data source: ${e.message}")
                     setDataSource(filePath)
-                    Log.d(TAG, "Set data source as file path")
                 }
                 
                 prepareAsync()
                 
                 setOnPreparedListener { mp ->
-                    Log.d(TAG, "MediaPlayer prepared, duration: ${mp.duration}ms")
                     mp.seekTo(initialPosition)
                     
                     // Set up seek bar
@@ -250,7 +287,6 @@ class PlayerFragment : Fragment() {
                 }
                 
                 setOnCompletionListener {
-                    Log.d(TAG, "Playback completed")
                     binding.btnPlay.setImageResource(android.R.drawable.ic_media_play)
                     this@PlayerFragment.isPlaying = false
                     binding.seekBar.progress = 0
@@ -272,42 +308,18 @@ class PlayerFragment : Fragment() {
         }
     }
     
-    private val updateSeekBarTask = object : Runnable {
-        override fun run() {
-            mediaPlayer?.let {
-                if (it.isPlaying) {
-                    binding.seekBar.progress = it.currentPosition
-                    updateCurrentTimeText(it.currentPosition)
-                    
-                    // Save position every 5 seconds
-                    if (it.currentPosition % 5000 < 1000) {
-                        currentAudioBook?.let { book ->
-                            // For chapters, save chapter position
-                            if (currentChapters.isNotEmpty() && currentChapterIndex < currentChapters.size) {
-                                val chapter = currentChapters[currentChapterIndex]
-                                viewModel.updateChapterPlayPosition(chapter.id, it.currentPosition.toLong())
-                                // Also update which chapter we're on
-                                viewModel.updateCurrentChapter(book.id, chapter.id)
-                            } else {
-                                // For single-file books
-                                viewModel.updatePlayPosition(book.id, it.currentPosition.toLong())
-                            }
-                        }
-                    }
-                }
-                handler.postDelayed(this, 1000)
-            }
-        }
-    }
-    
     private fun togglePlayback() {
         mediaPlayer?.let {
             if (it.isPlaying) {
                 it.pause()
                 binding.btnPlay.setImageResource(R.drawable.ic_play)
+                // Remove any existing handler callbacks when pausing
+                handler.removeCallbacks(updateSeekBarTask)
             } else {
                 it.start()
                 binding.btnPlay.setImageResource(R.drawable.ic_pause)
+                // Only start handler if not already running
+                handler.removeCallbacks(updateSeekBarTask)
                 handler.postDelayed(updateSeekBarTask, 1000)
             }
             this@PlayerFragment.isPlaying = it.isPlaying
@@ -404,48 +416,44 @@ class PlayerFragment : Fragment() {
     }
     
     private fun loadChapters(chapters: List<Chapter>) {
-        Log.d(TAG, "Loading ${chapters.size} chapters")
         currentChapters.clear()
         currentChapters.addAll(chapters.sortedBy { it.sequence })
         
         // Show chapter controls - Force visibility
         binding.layoutChapters.visibility = View.VISIBLE
-        Log.d(TAG, "Setting chapter controls to VISIBLE")
         
-        // Check if we should restore to a specific chapter
-        val savedChapterId = currentAudioBook?.currentChapterId
-        if (savedChapterId != null) {
-            Log.d(TAG, "Found saved chapter ID: $savedChapterId")
-            // Find the chapter in our list
-            val chapterIndex = currentChapters.indexOfFirst { it.id == savedChapterId }
-            if (chapterIndex != -1) {
-                Log.d(TAG, "Loading saved chapter at index $chapterIndex")
-                currentChapterIndex = chapterIndex
-                loadChapter(currentChapters[currentChapterIndex])
-                return
-            } else {
-                Log.w(TAG, "Saved chapter ID not found in chapter list")
+        // Only restore saved chapter on initial load, not on subsequent observer triggers
+        if (isInitialChapterLoad) {
+            // Check if we should restore to a specific chapter
+            val savedChapterId = currentAudioBook?.currentChapterId
+            if (savedChapterId != null) {
+                // Find the chapter in our list
+                val chapterIndex = currentChapters.indexOfFirst { it.id == savedChapterId }
+                if (chapterIndex != -1) {
+                    currentChapterIndex = chapterIndex
+                    loadChapter(currentChapters[currentChapterIndex])
+                    isInitialChapterLoad = false // Mark as no longer initial load
+                    return
+                } else {
+                    Log.w(TAG, "Saved chapter ID not found in chapter list")
+                }
             }
-        }
-        
-        // If we have single file and chapters, switch to the first chapter
-        if (mediaPlayer != null && currentChapters.isNotEmpty()) {
-            // Check if we're already playing a chapter
-            val currentFilePath = currentAudioBook?.filePath ?: ""
-            val isPlayingChapter = currentChapters.any { it.filePath == currentFilePath }
             
-            if (!isPlayingChapter) {
+            // If no saved chapter, load the first chapter
+            if (currentChapters.isNotEmpty()) {
                 currentChapterIndex = 0
                 loadChapter(currentChapters[currentChapterIndex])
             }
+            
+            isInitialChapterLoad = false // Mark as no longer initial load
+        } else {
+            // On subsequent loads, just update the chapter list but don't change current selection
         }
         
         updateChapterButtonStates()
     }
     
     private fun loadChapter(chapter: Chapter) {
-        Log.d(TAG, "Loading chapter: ${chapter.title}")
-        
         // Save current playback state
         val wasPlaying = mediaPlayer?.isPlaying ?: false
         
@@ -463,18 +471,15 @@ class PlayerFragment : Fragment() {
                 // First try as URI
                 val uri = Uri.parse(chapter.filePath)
                 setDataSource(requireContext(), uri)
-                Log.d(TAG, "Set data source as URI: $uri")
             } catch (e: Exception) {
                 // Fall back to file path
                 Log.w(TAG, "Error setting URI data source: ${e.message}")
                 setDataSource(chapter.filePath)
-                Log.d(TAG, "Set data source as file path")
             }
             
             prepareAsync()
             
             setOnPreparedListener { mp ->
-                Log.d(TAG, "MediaPlayer prepared for chapter, duration: ${mp.duration}ms")
                 mp.seekTo(chapter.lastPlayedPosition.toInt())
                 
                 // Set up seek bar
@@ -500,8 +505,6 @@ class PlayerFragment : Fragment() {
             }
             
             setOnCompletionListener {
-                Log.d(TAG, "Chapter playback completed")
-                
                 if (currentChapterIndex < currentChapters.size - 1) {
                     // Move to next chapter
                     currentChapterIndex++

@@ -23,9 +23,10 @@
                 android:id="@+id/toolbar_logo"
                 android:layout_width="48dp"
                 android:layout_height="48dp"
-                android:layout_gravity="start"
+                android:layout_gravity="start|center_vertical"
                 android:layout_marginStart="16dp"
                 android:src="@drawable/app_logo"
+                android:scaleType="centerInside"
                 android:contentDescription="@string/app_name" />
 
         </androidx.appcompat.widget.Toolbar>
